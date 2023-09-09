@@ -209,6 +209,7 @@ class Bard:
 
         # Update cookies using response
         self.session.cookies.update({"__Secure-1PSID": resp.cookies["__Secure-1PSID"]})
+        self.SNlM0e = self._get_snim0e()
 
         # Post-processing of response
         resp_dict = json.loads(resp.content.splitlines()[3])[0][2]
