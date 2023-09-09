@@ -150,6 +150,10 @@ class Bard:
         resp_text = await resp.text()
         resp_dict = json.loads(resp_text.splitlines()[3])[0][2]
 
+        # Update cookies using response
+        self.session.cookies.update({"__Secure-1PSID": resp.cookies["__Secure-1PSID"]})
+        self.SNlM0e = self._get_snim0e()
+
         if not resp_dict:
             return {"content": f"Response Error: {resp_text}."}
         resp_json = json.loads(resp_dict)
