@@ -207,6 +207,9 @@ class Bard:
             proxies=self.proxies,
         )
 
+        # Update cookies using response
+        self.session.cookies.update({"__Secure-1PSID": resp.cookies["__Secure-1PSID"]})
+
         # Post-processing of response
         resp_dict = json.loads(resp.content.splitlines()[3])[0][2]
 
