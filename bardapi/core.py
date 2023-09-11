@@ -1,3 +1,4 @@
+import asyncio
 import os
 import re
 import json
@@ -57,6 +58,7 @@ class Bard:
         self.language = language or os.getenv("_BARD_API_LANG")
         self.run_code = run_code
         self.google_translator_api_key = google_translator_api_key
+        asyncio.run(self._auto_refresh_token())
 
     def _get_token(self, token: str, token_from_browser: bool) -> str:
         """
@@ -125,6 +127,7 @@ class Bard:
                 f"Response status code is not 200. Response Status is {resp.status_code}"
             )
         snim0e = re.search(r"SNlM0e\":\"(.*?)\"", resp.text)
+        self.session.cookies.update({"__Secure-1PSIDTS": resp.cookies["__Secure-1PSIDTS"]})
         if not snim0e:
             raise Exception(
                 "SNlM0e value not found. Double-check __Secure-1PSID value or pass it as token='xxxxx'."
@@ -704,3 +707,9 @@ class Bard:
         self._reqid += 100000
 
         return {"url": url, "status_code": resp.status_code}
+
+    async def _auto_refresh_token(self):
+        self._get_snim0e()
+        # refresh every 20min
+        await asyncio.sleep(20*60)
+
