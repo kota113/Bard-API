@@ -157,7 +157,7 @@ class Bard:
                     "text_query": str,
                     "choices": list,
                     "links": list,
-                    "images": set,
+                    "images": list,
                     "program_lang": str,
                     "code": str,
                     "status_code": int
@@ -226,12 +226,12 @@ class Bard:
         resp_json = json.loads(resp_dict)
 
         # [Optional] gather image links
-        images = set()
+        images = list()
         try:
             if len(resp_json) >= 3:
                 nested_list = resp_json[4][0][4]
                 for img in nested_list:
-                    images.add(img[0][0][0])
+                    images.append(img[0][0][0])
         except (IndexError, TypeError, KeyError):
             pass
 
@@ -475,7 +475,7 @@ class Bard:
                     "text_query": str,
                     "choices": list,
                     "links": list,
-                    "images": set,
+                    "images": list,
                     "program_lang": str,
                     "code": str,
                     "status_code": int
