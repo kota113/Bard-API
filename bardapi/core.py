@@ -1,16 +1,17 @@
-import asyncio
-import os
-import re
-import json
-import uuid
 import base64
-import string
+import json
+import os
 import random
-import requests
+import re
+import string
+import uuid
 from typing import Optional
-from langdetect import detect
+
+import requests
 from deep_translator import GoogleTranslator
 from google.cloud import translate_v2 as translate
+from langdetect import detect
+
 from bardapi.constants import ALLOWED_LANGUAGES, SESSION_HEADERS
 from bardapi.utils import extract_links, upload_image, extract_bard_cookie
 
@@ -21,16 +22,16 @@ class Bard:
     """
 
     def __init__(
-        self,
-        token: Optional[str] = None,
-        timeout: int = 20,
-        proxies: Optional[dict] = None,
-        session: Optional[requests.Session] = None,
-        conversation_id: Optional[str] = None,
-        google_translator_api_key: Optional[str] = None,
-        language: Optional[str] = None,
-        run_code: bool = False,
-        token_from_browser: bool = False,
+            self,
+            token: Optional[str] = None,
+            timeout: int = 20,
+            proxies: Optional[dict] = None,
+            session: Optional[requests.Session] = None,
+            conversation_id: Optional[str] = None,
+            google_translator_api_key: Optional[str] = None,
+            language: Optional[str] = None,
+            run_code: bool = False,
+            token_from_browser: bool = False,
     ):
         """
         Initialize the Bard instance.
@@ -58,7 +59,6 @@ class Bard:
         self.language = language or os.getenv("_BARD_API_LANG")
         self.run_code = run_code
         self.google_translator_api_key = google_translator_api_key
-        asyncio.run(self._auto_refresh_token())
 
     def _get_token(self, token: str, token_from_browser: bool) -> str:
         """
@@ -126,8 +126,9 @@ class Bard:
             raise Exception(
                 f"Response status code is not 200. Response Status is {resp.status_code}"
             )
+        new_1PSIDTS = [x for x in resp.headers["Set-Cookie"].split(", ") if "PSIDTS" in x][0]
+        self.session.cookies.set("__Secure-1PSIDTS", new_1PSIDTS.split("=")[1])
         snim0e = re.search(r"SNlM0e\":\"(.*?)\"", resp.text)
-        self.session.cookies.update({"__Secure-1PSIDTS": resp.cookies["__Secure-1PSIDTS"]})
         if not snim0e:
             raise Exception(
                 "SNlM0e value not found. Double-check __Secure-1PSID value or pass it as token='xxxxx'."
@@ -175,16 +176,16 @@ class Bard:
 
         # [Optional] Set language
         if (
-            self.language is not None
-            and self.language not in ALLOWED_LANGUAGES
-            and self.google_translator_api_key is None
+                self.language is not None
+                and self.language not in ALLOWED_LANGUAGES
+                and self.google_translator_api_key is None
         ):
             translator_to_eng = GoogleTranslator(source="auto", target="en")
             input_text = translator_to_eng.translate(input_text)
         elif (
-            self.language is not None
-            and self.language not in ALLOWED_LANGUAGES
-            and self.google_translator_api_key is not None
+                self.language is not None
+                and self.language not in ALLOWED_LANGUAGES
+                and self.google_translator_api_key is not None
         ):
             input_text = google_official_translator.translate(
                 input_text, target_language="en"
@@ -216,8 +217,8 @@ class Bard:
         if not resp_dict:
             return {
                 "content": f"Response Error: {resp.content}. "
-                f"\nUnable to get response."
-                f"\nPlease double-check the cookie values and verify your network environment or google account."
+                           f"\nUnable to get response."
+                           f"\nPlease double-check the cookie values and verify your network environment or google account."
             }
         resp_json = json.loads(resp_dict)
 
@@ -237,9 +238,9 @@ class Bard:
         # [Optional] translated by google translator
         # Unofficial
         if (
-            self.language is not None
-            and self.language not in ALLOWED_LANGUAGES
-            and self.google_translator_api_key is None
+                self.language is not None
+                and self.language not in ALLOWED_LANGUAGES
+                and self.google_translator_api_key is None
         ):
             translator_to_lang = GoogleTranslator(source="auto", target=self.language)
             parsed_answer[4] = [
@@ -249,9 +250,9 @@ class Bard:
 
         # Official google cloud translation API
         elif (
-            self.language is not None
-            and self.language not in ALLOWED_LANGUAGES
-            and self.google_translator_api_key is not None
+                self.language is not None
+                and self.language not in ALLOWED_LANGUAGES
+                and self.google_translator_api_key is not None
         ):
             parsed_answer[4] = [
                 [
@@ -268,7 +269,7 @@ class Bard:
             program_lang = (
                 parsed_answer[4][0][1][0].split("```")[1].split("\n")[0].strip()
             )
-            code = parsed_answer[4][0][1][0].split("```")[1][len(program_lang) :]
+            code = parsed_answer[4][0][1][0].split("```")[1][len(program_lang):]
         except Exception:
             program_lang, code = None, None
 
@@ -354,8 +355,8 @@ class Bard:
         if not resp_dict:
             return {
                 "content": f"Response Error: {resp.content}. "
-                f"\nUnable to get response."
-                f"\nPlease double-check the cookie values and verify your network environment or google account."
+                           f"\nUnable to get response."
+                           f"\nPlease double-check the cookie values and verify your network environment or google account."
             }
         resp_json = json.loads(resp_dict)
         audio_b64 = resp_json[0]
@@ -438,7 +439,7 @@ class Bard:
         return {"url": url, "status_code": resp.status_code}
 
     def ask_about_image(
-        self, input_text: str, image: bytes, lang: Optional[str] = None
+            self, input_text: str, image: bytes, lang: Optional[str] = None
     ) -> dict:
         """
         Send Bard image along with question and get answer
@@ -479,24 +480,24 @@ class Bard:
 
         # [Optional] Set language
         if (
-            (self.language is not None or lang is not None)
-            and self.language not in ALLOWED_LANGUAGES
-            and self.google_translator_api_key is None
+                (self.language is not None or lang is not None)
+                and self.language not in ALLOWED_LANGUAGES
+                and self.google_translator_api_key is None
         ):
             translator_to_eng = GoogleTranslator(source="auto", target="en")
             transl_text = translator_to_eng.translate(input_text)
         elif (
-            (self.language is not None or lang is not None)
-            and self.language not in ALLOWED_LANGUAGES
-            and self.google_translator_api_key is not None
+                (self.language is not None or lang is not None)
+                and self.language not in ALLOWED_LANGUAGES
+                and self.google_translator_api_key is not None
         ):
             transl_text = google_official_translator.translate(
                 input_text, target_language="en"
             )
         elif (
-            (self.language is None or lang is None)
-            and self.language not in ALLOWED_LANGUAGES
-            and self.google_translator_api_key is None
+                (self.language is None or lang is None)
+                and self.language not in ALLOWED_LANGUAGES
+                and self.google_translator_api_key is None
         ):
             translator_to_eng = GoogleTranslator(source="auto", target="en")
             transl_text = translator_to_eng.translate(input_text)
@@ -543,8 +544,8 @@ class Bard:
         if not resp_dict:
             return {
                 "content": f"Response Error: {resp.content}. "
-                f"\nUnable to get response."
-                f"\nPlease double-check the cookie values and verify your network environment or google account."
+                           f"\nUnable to get response."
+                           f"\nPlease double-check the cookie values and verify your network environment or google account."
             }
         parsed_answer = json.loads(resp_dict)
         content = parsed_answer[4][0][1][0]
@@ -558,14 +559,14 @@ class Bard:
                 translated_content = translator.translate(content)
 
             elif (
-                lang is None and self.language is None
+                    lang is None and self.language is None
             ) and self.google_translator_api_key is None:
                 us_lang = detect(input_text)
                 translator = GoogleTranslator(source="en", target=us_lang)
                 translated_content = translator.translate(content)
 
             elif (
-                self.language is not None and self.google_translator_api_key is not None
+                    self.language is not None and self.google_translator_api_key is not None
             ):
                 translated_content = google_official_translator.translate(
                     content, target_language=self.language
@@ -575,7 +576,7 @@ class Bard:
                     content, target_language=lang
                 )
             elif (
-                self.language is None and lang is None
+                    self.language is None and lang is None
             ) and self.google_translator_api_key is not None:
                 us_lang = detect(input_text)
                 translated_content = google_official_translator.translate(
@@ -608,11 +609,11 @@ class Bard:
         return bard_answer
 
     def export_replit(
-        self,
-        code: str,
-        program_lang: Optional[str] = None,
-        filename: Optional[str] = None,
-        **kwargs,
+            self,
+            code: str,
+            program_lang: Optional[str] = None,
+            filename: Optional[str] = None,
+            **kwargs,
     ) -> dict:
         """
         Get export URL to repl.it from code
@@ -707,9 +708,3 @@ class Bard:
         self._reqid += 100000
 
         return {"url": url, "status_code": resp.status_code}
-
-    async def _auto_refresh_token(self):
-        self._get_snim0e()
-        # refresh every 20min
-        await asyncio.sleep(20*60)
-
